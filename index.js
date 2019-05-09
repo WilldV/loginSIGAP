@@ -14,7 +14,7 @@ const routes = require('./routes')
 const passport = require('./middlewares/passport')
 
 //configuracion
-app.set('PORT', process.env.PORT || '3000')
+app.set('PORT', process.env.PORT || '4000')
 
 app.set('views', path.join(__dirname, 'views'))
 
