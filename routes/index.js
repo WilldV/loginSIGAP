@@ -11,7 +11,6 @@ router.get('/login',(req, res) => {
 })
 
 router.get('/facturas', isLogged,(req, res) => {
-    //res.send('Logeado')
     res.redirect('https://sigap-control-recibos-front.herokuapp.com/')
 })
 
@@ -36,10 +35,8 @@ router.get('/logout', (req, res) => {
 })
 
 function isLogged(req, res, next) {
-    if (req.isAuthenticated()) {
-        return next();
-    } else {
-        return res.redirect('/login');
-    }
+    if (req.isAuthenticated()) res.redirect('/facturas');
+    return next();
+
 }
 module.exports = router;
