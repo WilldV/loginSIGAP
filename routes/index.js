@@ -6,12 +6,12 @@ router.get('/',(req, res) => {
     res.redirect('/login')
 })
 
-router.get('/login',(req, res) => {
+router.get('/login', isLogged,(req, res) => {
     res.render('index', {message: req.flash('login')})
 })
 
 router.get('/facturas', isLogged,(req, res) => {
-    res.redirect('https://sigap-control-recibos-front.herokuapp.com/')
+    res.redirect('/login')
 })
 
 router.post('/login', (req, res, next) => {
@@ -21,6 +21,7 @@ router.post('/login', (req, res, next) => {
         if (err) {
             return next(err)}
         if (!user) {
+            req.logout()
             return res.redirect('/login'); }
         req.logIn(user, async function (err) {
             if (err) { return next(err); }
@@ -35,7 +36,7 @@ router.get('/logout', (req, res) => {
 })
 
 function isLogged(req, res, next) {
-    if (req.isAuthenticated()) res.redirect('/facturas');
+    if (req.isAuthenticated()) return res.redirect('https://sigap-control-recibos-front.herokuapp.com/');
     return next();
 
 }
