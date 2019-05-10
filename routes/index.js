@@ -21,7 +21,6 @@ router.post('/login', (req, res, next) => {
         if (err) {
             return next(err)}
         if (!user) {
-            req.logout()
             return res.redirect('/login'); }
         req.logIn(user, async function (err) {
             if (err) { return next(err); }
