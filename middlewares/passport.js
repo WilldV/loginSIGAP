@@ -1,5 +1,5 @@
 var pgp = require("pg-promise")(/*options*/);
-var sigap = pgp('postgres://modulo4:modulo4d@159.65.230.188:5432/tcs2');
+var sigap = pgp('postgres://modulo4:modulo4d@172.16.64:5432/tcs2');
 
 const passport = require('passport')
 const LocalStrategy = require('passport-local').Strategy
@@ -22,8 +22,12 @@ passport.use(new LocalStrategy({
     passwordField: 'password',
     passReqToCallback: true
 }, function (req, username, password, done) {
+    console.log(username, password);
+    
     sigap.one('SELECT * FROM USUARIO WHERE user_name = $1', username)
         .then(function (data) {
+            console.log(data);
+            
             if (checkPassword(data, password)) {
                 return done(null, data)
             } else {
