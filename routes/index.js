@@ -8,48 +8,44 @@ router.get('/', (req, res) => {
 })
 
 router.get('/newpassword', (req, res) => {
-    sigap.func('verificar_password', ['RCUBA', 123])
-        .then(data => {
-            console.log('DATA:', data); // print data;
-        })
-        .catch(error => {
-            console.log('ERROR:', error); // print the error;
-        });
     res.render('newPassword')
 })
 
 router.post('/newpassword', (req, res) => {
     const body = req.body
-    console.log(body);
 
     sigap.one('SELECT * FROM USUARIO where user_name = $1', body.username)
         .then(function (data) {
-            if (data.pass == body.lastPassword) {
+            sigap.any('SELECT * FROM comparar_password($1::character varying,$2::character varying)', [body.username, body.lastPassword])
+                .then(data => {
+                console.log('DATA:', data); // print data;
                 if (body.newPassword == body.confirmPassword) {
-                    sigap.one('UPDATE USUARIO set pass = $1 where user_name = $2', [body.newPassword, body.username])
+                    if(data[0].comparar_password == 1){
+                        sigap.one('UPDATE USUARIO set pass = $1::character varying where user_name = $2::character varying', [body.newPassword, body.username])
                         .then(function (data2) {
                             req.flash('login', "Contraseña cambiada correctamente")
                             res.redirect('/login')
                         })
                         .catch(function (err2) {
-                            console.log(err2);
-
-                            res.render('newPassword', { message: "Ha ocurrido un error" })
+                            if (err2.received==0) {
+                                res.redirect('/login')
+                            }
                         })
+                    }else{
+                        res.render('newPassword', { message: "Contraseña incorrecta." })
+                    }
                 } else {
                     res.render('newPassword', { message: "Las contraseñas nuevas no son iguales." })
                 }
-            } else {
-                res.render('newPassword', { message: "Contraseña incorrecta." })
-            }
+            })
+                .catch(error => {
+                console.log('ERROR:', error); // print the error;
+            });
         })
         .catch(function (error) {
             if (error.received == 0) {
                 res.render('newPassword', { message: "No existe el usuario" })
             } else {
-                console.log('as');
-                console.log(error);
-
                 res.render('newPassword', { message: "Ha ocurrido un error" })
             }
         })
@@ -89,9 +85,7 @@ router.get('/logout', (req, res) => {
 
 function isLogged(req, res, next) {
     if (req.isAuthenticated()) {
-        console.log(req.session);
-        return res.redirect('http://localhost:4000')
-        //return res.redirect('https://sigap-control-recibos-front.herokuapp.com/')
+        return res.redirect('https://sigap-control-recibos-front.herokuapp.com/')
     }
     return next();
 

@@ -1,5 +1,5 @@
 
-//const sigap = require('../database/connection')
+sigap = require('../database/connection')
 
 const passport = require('passport')
 const LocalStrategy = require('passport-local').Strategy
@@ -25,11 +25,16 @@ passport.use(new LocalStrategy({
 }, function (req, username, password, done) {
     sigap.one('SELECT * FROM USUARIO WHERE user_name = $1', username)
         .then(function (data) {
-            if (checkPassword(data, password)) {
-                return done(null, data)
-            } else {
-                return done(null, false, req.flash('login', 'Contraseña incorrecta.'))
-            }
+            sigap.any('SELECT * FROM comparar_password($1::character varying,$2::character varying)', [username, password])
+                .then(data2 => {
+                console.log('DATA:', data2); // print data;
+                    if(data2[0].comparar_password == 1){
+                        return done(null, data)
+                    }else{
+                        return done(null, false, req.flash('login', 'Contraseña incorrecta.'))
+                    }
+               
+            })
         })
         .catch(function (error) {
             if (error.received == 0) {
@@ -41,8 +46,6 @@ passport.use(new LocalStrategy({
 }
 ));
 
-function checkPassword(usuario, password) {
-    return usuario.pass == password
-}
+
 
 module.exports = passport;
